@@ -1,0 +1,15 @@
+
+
+query ContainerForCargo {
+  description: "Select all Container based on their Weight"
+  statement: 
+  SELECT org.ctbs.Container
+      WHERE ((Max_Cargo_Capacity >= _$Max_Cargo_Capacity) & (Status =="NOT_ASSINGED")) LIMIT 1 
+}
+
+query TruckForContainer {
+  description: "Select Trucks suitable for the container"
+  statement: 
+  SELECT org.ctbs.Truck
+      WHERE (trailer.width >= _$container_width AND (trailer.length >= _$container_length))
+}

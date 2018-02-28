@@ -1,0 +1,175 @@
+/**
+ * Write your model definitions here
+ */
+
+namespace org.ctbs
+
+
+
+participant RailRamp identified by rampId {
+  o String rampId
+  o Address location
+  o Integer max_capacity
+  o Integer available_Space
+}
+
+participant Customer identified by id {
+  o String id
+  o String name
+  o String emailid
+  o String phoneno
+  o Address address
+}
+
+asset Truck identified by regNo {
+  o String regNo
+  o Driver driver
+  o Trailer trailer
+  o Address current_location
+  o Truck_Status status default="HALT"
+  o TripDetails Current_TripDetails optional
+  o TripDetails[] All_Trips optional
+}
+concept Driver {
+  o String name
+  o String licence_Number
+  o String cell_number
+}
+concept TripDetails{
+  --> Container container
+  o Address pickup_point
+  o Address dropping_point
+}
+enum Truck_Status{
+  o LOADING_CONTAINER
+  o UNLOADING_CONTAINER
+  o HEADING_PICKUP_POINT
+  o ARRIVED_PICKUP_POINT
+  o HEADING_DROPPING_LOCATION
+  o ARRIVED_DROPPING_LOCATION
+  o HALT
+}
+concept Trailer {
+  o Trailer_type Type
+  o Integer width
+  o Integer height optional
+  o Integer length
+  o Door_Opening door_opening optional
+}
+enum Trailer_type {
+  o OPEN_TOP
+  o CLOSED
+}
+concept Address {
+  o String Street
+  o String City
+  o String Provision
+  o String ZipCode
+}
+
+enum Container_Type {
+  o HighCube 
+  o Refrigerated
+  o Open_Top
+  o Flat_Rack
+  o Platform
+}
+enum Material {
+  o Aluminum
+  o Steel
+}
+concept Door_Opening {
+  o Integer width
+  o Integer height
+}
+concept Dimensions {
+  o Integer width
+  o Integer height
+  o Integer length
+}
+enum Status {
+  o ASSIGNED
+  o NOT_ASSIGNED
+  o REQUESTED
+  o IN_TRANSIT
+  o ARRIVED
+  o ON_RAILROAD
+}
+
+asset Container identified by id {
+  o String id
+  o Integer Size
+  o Container_Type Type
+  o Material Material
+  o Integer Outside_Height 
+  o Integer Tare_Weight
+  o Integer Max_Cargo_Capacity 
+  o Door_Opening Door_Opening
+  o Dimensions Dimensions
+  o Address current_location 
+  o Container_Status Status default="HALT"
+  o Cargo_status Cargo_status default="EMPTY"
+  --> Container_Tracking[] Container_Transit_Logs optional
+}
+enum Cargo_status{
+  o EMPTY
+  o LOADING_CARGO
+  o CARGO_LOADED
+  o UNLOADING
+}
+enum Container_Status {
+  o NOT_ASSINGED
+  o HALT
+  o LOADING_ONTO_TRUCK
+  o ARRIVED_PICKUP_POINT
+  o ON_RAMP
+  o UNLOADING_FROM_TRUCK
+  o LOADING_INTO_RAIL
+  o UNLOADING_FROM_RAIL
+  o TRANSIT_IN_RAIL
+  o ARRIVED_DROPPING_POINT
+  o HEADING_TOWARDS_RAMP_ON_TRUCK
+}
+concept Container_details{
+  o String container_id
+  o Integer Size
+  o Container_Type Type
+  o Material Material
+  o Integer Outside_Height 
+  o Integer Tare_Weight
+  o Integer Max_Cargo_Capacity 
+  o Door_Opening Door_Opening
+  o Dimensions Dimensions
+  o Address current_location
+}
+
+concept Transit_Logs {
+  --> Truck truck_assigned optional
+  --> RailRamp cn_RailRamp optional
+  o Status container_Status
+  o Status container_cargo_status optional
+  o Address location optional
+}
+asset Container_Tracking identified by id {
+  o String id
+  --> Customer OrderedBy
+  --> Container Container_Assigned
+  o Integer Cargo_weight
+  o Address PickUp_Address
+  o Address Dropping_Address
+  o Transit_Logs Current_Status
+  o Transit_Logs[] transit_logs
+}
+event Adding_Container {
+  --> Container container
+}
+
+transaction Add_Container {
+  o Container_details container_details
+}
+transaction RequestContainer{
+  o Address pickUp_Address
+  o Address dropping_Address
+  o Integer cargo_weight
+}
+
