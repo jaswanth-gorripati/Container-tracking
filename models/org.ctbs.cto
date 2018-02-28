@@ -41,13 +41,18 @@ concept TripDetails{
   o Address dropping_point
 }
 enum Truck_Status{
+  o ASSIGNED_CONTAINER
+  o HEADING_TO_PICKUP_CONTAINER
+  o ARRIVED_TO_PICKUP_CONTAINER_LOCATION
+  o HEADING_TO_UNLOAD_CONTAINER
+  o ARRIVED_TO_UNLOAD_CONTAINER_LOCATION
   o LOADING_CONTAINER
   o UNLOADING_CONTAINER
-  o HEADING_PICKUP_POINT
-  o ARRIVED_PICKUP_POINT
-  o HEADING_DROPPING_LOCATION
-  o ARRIVED_DROPPING_LOCATION
-  o HALT
+  o HEADING_TOWARDS_CARGO_PICKUP_POINT
+  o ARRIVED_CARGO_PICKUP_POINT
+  o HEADING_CARGO_DROPPING_LOCATION
+  o ARRIVED_CARGO_DROPPING_LOCATION
+  o IN_HALT
 }
 concept Trailer {
   o Trailer_type Type
@@ -109,8 +114,11 @@ asset Container identified by id {
   o Address current_location 
   o Container_Status Status default="HALT"
   o Cargo_status Cargo_status default="EMPTY"
+  o Integer Avilable_cargo_space optional
+  --> Container_Tracking Current_Transit optional
   --> Container_Tracking[] Container_Transit_Logs optional
 }
+
 enum Cargo_status{
   o EMPTY
   o LOADING_CARGO
@@ -137,7 +145,7 @@ concept Container_details{
   o Material Material
   o Integer Outside_Height 
   o Integer Tare_Weight
-  o Integer Max_Cargo_Capacity 
+  o Integer Max_Cargo_Capacity
   o Door_Opening Door_Opening
   o Dimensions Dimensions
   o Address current_location
@@ -167,9 +175,9 @@ event Adding_Container {
 transaction Add_Container {
   o Container_details container_details
 }
+
 transaction RequestContainer{
   o Address pickUp_Address
   o Address dropping_Address
   o Integer cargo_weight
 }
-
