@@ -21,15 +21,6 @@ participant Customer identified by id {
   o Address address
 }
 
-asset Truck identified by regNo {
-  o String regNo
-  o Driver driver
-  o Trailer trailer
-  o Address current_location
-  o Truck_Status status default="HALT"
-  o TripDetails Current_TripDetails optional
-  o TripDetails[] All_Trips optional
-}
 concept Driver {
   o String name
   o String licence_Number
@@ -37,8 +28,10 @@ concept Driver {
 }
 concept TripDetails{
   --> Container container
-  o Address pickup_point
-  o Address dropping_point
+  o Address Container_pickup_point optional
+  o Address Cargo_pickup_point optional
+  o Address Cargo_dropping_point optional
+  o Address Container_dropping_point optional
 }
 enum Truck_Status{
   o ASSIGNED_CONTAINER
@@ -71,7 +64,32 @@ concept Address {
   o String Provision
   o String ZipCode
 }
-
+asset Truck identified by regNo {
+  o String regNo
+  o Driver driver
+  o Trailer trailer
+  o Address current_location
+  o Truck_Status status default="HALT"
+  o TripDetails Current_TripDetails optional
+  o TripDetails[] All_Trips optional
+}
+asset Container identified by id {
+  o String id
+  o Integer Size
+  o Container_Type Type
+  o Material Material
+  o Integer Outside_Height 
+  o Integer Tare_Weight
+  o Integer Max_Cargo_Capacity 
+  o Door_Opening Door_Opening
+  o Dimensions Dimensions
+  o Address current_location 
+  o Container_Status Status default="HALT"
+  o Cargo_status Cargo_status default="EMPTY"
+  o Integer Avilable_cargo_space optional
+  --> Container_Tracking Current_Transit optional
+  --> Container_Tracking[] Container_Transit_Logs optional
+}
 enum Container_Type {
   o HighCube 
   o Refrigerated
@@ -99,24 +117,7 @@ enum Status {
   o IN_TRANSIT
   o ARRIVED
   o ON_RAILROAD
-}
-
-asset Container identified by id {
-  o String id
-  o Integer Size
-  o Container_Type Type
-  o Material Material
-  o Integer Outside_Height 
-  o Integer Tare_Weight
-  o Integer Max_Cargo_Capacity 
-  o Door_Opening Door_Opening
-  o Dimensions Dimensions
-  o Address current_location 
-  o Container_Status Status default="HALT"
-  o Cargo_status Cargo_status default="EMPTY"
-  o Integer Avilable_cargo_space optional
-  --> Container_Tracking Current_Transit optional
-  --> Container_Tracking[] Container_Transit_Logs optional
+  o HALT
 }
 
 enum Cargo_status{
@@ -126,7 +127,8 @@ enum Cargo_status{
   o UNLOADING
 }
 enum Container_Status {
-  o NOT_ASSINGED
+  o NOT_ASSIGNED
+  o ASSIGNED
   o HALT
   o LOADING_ONTO_TRUCK
   o ARRIVED_PICKUP_POINT
@@ -154,8 +156,9 @@ concept Container_details{
 concept Transit_Logs {
   --> Truck truck_assigned optional
   --> RailRamp cn_RailRamp optional
-  o Status container_Status
-  o Status container_cargo_status optional
+  o Container_Status container_Status
+  o Truck_Status Truck_Status optional
+  o Cargo_status container_cargo_status optional
   o Address location optional
 }
 asset Container_Tracking identified by id {
