@@ -4,21 +4,13 @@
 
 namespace org.ctbs
 
-
-
-participant RailRamp identified by rampId {
-  o String rampId
-  o Address location
-  o Integer max_capacity
-  o Integer available_Space
-}
-
 participant Customer identified by id {
   o String id
   o String name
   o String emailid
   o String phoneno
   o Address address
+  --> Container_Tracking[] Orders optional
 }
 
 concept Driver {
@@ -34,18 +26,25 @@ concept TripDetails{
   o Address Container_dropping_point optional
 }
 enum Truck_Status{
-  o ASSIGNED_CONTAINER
+  o IN_HALT
+  o CONTAINER_ASSIGNED
   o HEADING_TO_PICKUP_CONTAINER
-  o ARRIVED_TO_PICKUP_CONTAINER_LOCATION
-  o HEADING_TO_UNLOAD_CONTAINER
-  o ARRIVED_TO_UNLOAD_CONTAINER_LOCATION
-  o LOADING_CONTAINER
-  o UNLOADING_CONTAINER
+  o ARRIVED_CONTAINER_PICKUP_LOCATION
+  o LOADING_CONTAINER_ONTO_TRAILER
   o HEADING_TOWARDS_CARGO_PICKUP_POINT
   o ARRIVED_CARGO_PICKUP_POINT
+  o LOADING_CARGO
+  o HEADING_TOWARDS_RAMP
+  o ENTERING_RAMP_TO_UNLOAD_CONTAINER
+  o ENTERING_RAMP_TO_COLLECT_CONTANER
+  o WAITING_TO_COLLECT_CONTAINER_FROM_RAMP
+  o EXITING_FROM_RAMP_LOCATION
+  o EXISTING_FROM_RAMP_LOCATION_WITH_CONTAINER
   o HEADING_CARGO_DROPPING_LOCATION
   o ARRIVED_CARGO_DROPPING_LOCATION
-  o IN_HALT
+  o UNLOADING_CARGO
+  o HEADING_CONTAINER_HALT_LOCATION
+  o UNLOADING_CONTAINER_IN_HALT
 }
 concept Trailer {
   o Trailer_type Type
@@ -73,6 +72,23 @@ asset Truck identified by regNo {
   o TripDetails Current_TripDetails optional
   o TripDetails[] All_Trips optional
 }
+asset RailRamp identified by rampId {
+  o String rampId
+  o Address location
+  o RampStatus ramp_status default="OPEN"
+  o Containers_In_Ramp[] Containers_details optional
+}
+enum RampStatus {
+  o OPEN
+  o CLOSE
+}
+concept Containers_In_Ramp {
+  --> Container container
+  --> Truck container_came_on_truck
+  o DateTime Arrival_DateTime
+  o DateTime Expected_LoadingTime
+  o DateTime Actual_LoadingTime optional
+}
 asset Container identified by id {
   o String id
   o Integer Size
@@ -85,7 +101,7 @@ asset Container identified by id {
   o Dimensions Dimensions
   o Address current_location 
   o Container_Status Status default="HALT"
-  o Cargo_status Cargo_status default="EMPTY"
+  o Cargo_status container_Cargo_status default="EMPTY"
   o Integer Avilable_cargo_space optional
   --> Container_Tracking Current_Transit optional
   --> Container_Tracking[] Container_Transit_Logs optional
@@ -118,27 +134,37 @@ enum Status {
   o ARRIVED
   o ON_RAILROAD
   o HALT
+  o DELIVERED
 }
 
 enum Cargo_status{
   o EMPTY
-  o LOADING_CARGO
-  o CARGO_LOADED
-  o UNLOADING
+  o LOADING_INTO_CONTAINER
+  o LOADED_IN_CONTAINER
+  o REACHED_CARGO_DROP_LOCATION
+  o UNLOADING_FROM_CONTAINER
+  o DELIVERED
 }
 enum Container_Status {
   o NOT_ASSIGNED
+  o REQUESTED
   o ASSIGNED
-  o HALT
+  o IN_HALT
   o LOADING_ONTO_TRUCK
-  o ARRIVED_PICKUP_POINT
-  o ON_RAMP
-  o UNLOADING_FROM_TRUCK
+  o HEADING_TOWARDS_CARGO_PICKUP
+  o ARRIVED_CARGO_PICKUP_POINT
+  o LOADING_CARGO
+  o HEADING_TOWARDS_RAMP
+  o UNLOADING_FROM_TRUCK_TO_RAMP
+  o WAITING_ON_RAMP_FOR_RAIL
   o LOADING_INTO_RAIL
-  o UNLOADING_FROM_RAIL
   o TRANSIT_IN_RAIL
+  o UNLOADING_FROM_RAIL_TO_RAMP
+  o WAITING_ON_RAMP_FOR_TRUCK
+  o HEADING_TOWARDS_DROPPING_LOCATION
   o ARRIVED_DROPPING_POINT
-  o HEADING_TOWARDS_RAMP_ON_TRUCK
+  o UNLOADING_CARGO
+  o HEADING_TOWARDS_HALT_LOCATION
 }
 concept Container_details{
   o String container_id
@@ -156,16 +182,27 @@ concept Container_details{
 concept Transit_Logs {
   --> Truck truck_assigned optional
   --> RailRamp cn_RailRamp optional
-  o Container_Status container_Status
+  o Container_Status container_Status optional
   o Truck_Status Truck_Status optional
   o Cargo_status container_cargo_status optional
   o Address location optional
+  o DateTime Arrival_time optional
+  o DateTime Departure_time optional
+  o DateTime Ramp_Entry_time optional
+  o DateTime Ramp_Exit_time optional
+  o DateTime Time optional
+  o Status Status
 }
-asset Container_Tracking identified by id {
-  o String id
+asset Container_Tracking identified by bill_number {
+  o String bill_number
+  o DateTime OrderDate
+  o DateTime Expected_Delivery_Date
+  o DateTime DeliveredOn optional
   --> Customer OrderedBy
   --> Container Container_Assigned
   o Integer Cargo_weight
+  o Cargo_Details Cargo_details
+  o Cargo_status Cargo_status
   o Address PickUp_Address
   o Address Dropping_Address
   o Transit_Logs Current_Status
@@ -178,9 +215,35 @@ event Adding_Container {
 transaction Add_Container {
   o Container_details container_details
 }
-
+transaction Add_Truck {
+  o String regNo
+  o Driver driver
+  o Trailer trailer
+  o Address current_location
+}
+transaction Add_Ramp {
+  o String rampId
+  o Address location
+  o RampStatus ramp_status default="OPEN"
+  o Containers_In_Ramp[] Containers_details optional
+}
+enum Flamable {
+  o YES
+  o NO
+}
+concept Cargo_Details{
+  o String cargo_type
+  o Flamable flamable
+  o Integer Number_of_Packages
+  o String Other_Details optional
+}
 transaction RequestContainer{
   o Address pickUp_Address
   o Address dropping_Address
   o Integer cargo_weight
+  o Cargo_Details cargo_details
+}
+transaction TransitLogUpdate {
+  --> Container_Tracking container_tracking_id
+  o Transit_Logs tracking_status
 }
