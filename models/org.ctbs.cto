@@ -18,13 +18,13 @@ abstract participant Agency identified by agencyId {
   o String Located_in_city
 }
 participant ContainerAgency extends Agency {
-  --> Container[] containersOwned
+  --> Container[] containersOwned optional
 }
 participant TruckAgency extends Agency {
-  --> Truck[] trucksOwned
+  --> Truck[] trucksOwned optional
 }
 participant RampAgency extends Agency {
-  --> RailRamp[] rampsOwned
+  --> RailRamp[] rampsOwned optional
 }
 
 concept Driver {
@@ -212,11 +212,11 @@ concept Transit_Logs {
   o Status Status
 }
 concept Route{
-  o Integer originRampZip
-  o Integer destinationRampZip
-  o Integer alternateOriginZip optional
-  o Integer alternateDestZip optional
-  o Integer ContainerDropZip
+--> RailRamp originRamp
+--> RailRamp destinationRamp
+--> RailRamp alternateOriginRamp optional
+--> RailRamp alternateDestRamp optional
+o Integer ContainerDropZip
 }
 asset Container_Tracking identified by bill_number {
   o String bill_number
@@ -225,7 +225,7 @@ asset Container_Tracking identified by bill_number {
   o DateTime DeliveredOn optional
   --> Customer OrderedBy
   --> Container Container_Assigned
-  o Route Expected_Route_Zipcodes
+  o Route Expected_Route
   o Integer Cargo_weight
   o Cargo_Details Cargo_details
   o Cargo_status Cargo_status
@@ -271,4 +271,6 @@ transaction RequestContainer{
 transaction TransitLogUpdate {
   --> Container_Tracking container_tracking_id
   o Transit_Logs tracking_status
+}
+transaction setupDemo {
 }
