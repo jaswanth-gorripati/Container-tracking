@@ -12,6 +12,20 @@ participant Customer identified by id {
   o Address address
   --> Container_Tracking[] Orders optional
 }
+abstract participant Agency identified by agencyId {
+  o String agencyId
+  o String agencyName
+  o String Located_in_city
+}
+participant ContainerAgency extends Agency {
+  --> Container[] containersOwned
+}
+participant TruckAgency extends Agency {
+  --> Truck[] trucksOwned
+}
+participant RampAgency extends Agency {
+  --> RailRamp[] rampsOwned
+}
 
 concept Driver {
   o String name
@@ -65,6 +79,7 @@ concept Address {
 }
 asset Truck identified by regNo {
   o String regNo
+  --> TruckAgency ownedByAgency
   o Driver driver
   o Trailer trailer
   o Address current_location
@@ -74,6 +89,7 @@ asset Truck identified by regNo {
 }
 asset RailRamp identified by rampId {
   o String rampId
+  --> RampAgency ownedByAgency
   o Address location
   o RampStatus ramp_status default="OPEN"
   o Containers_In_Ramp[] Containers_details optional
@@ -91,6 +107,7 @@ concept Containers_In_Ramp {
 }
 asset Container identified by id {
   o String id
+  --> ContainerAgency ownedByAgency
   o Integer Size
   o Container_Type Type
   o Material Material
