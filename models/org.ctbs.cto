@@ -251,7 +251,6 @@ transaction Add_Ramp {
   o String rampId
   o Address location
   o RampStatus ramp_status default="OPEN"
-  o Containers_In_Ramp[] Containers_details optional
 }
 enum Flamable {
   o YES
