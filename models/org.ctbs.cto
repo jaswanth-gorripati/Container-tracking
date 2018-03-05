@@ -75,7 +75,7 @@ concept Address {
   o String Street
   o String City
   o String Provision
-  o String ZipCode
+  o Integer ZipCode
 }
 asset Truck identified by regNo {
   o String regNo
@@ -166,6 +166,7 @@ enum Container_Status {
   o NOT_ASSIGNED
   o REQUESTED
   o ASSIGNED
+  o WAITING_FOR_TRUCK_TO_PICKUP
   o IN_HALT
   o LOADING_ONTO_TRUCK
   o HEADING_TOWARDS_CARGO_PICKUP
@@ -210,6 +211,13 @@ concept Transit_Logs {
   o DateTime Time optional
   o Status Status
 }
+concept Route{
+  o Integer originRampZip
+  o Integer destinationRampZip
+  o Integer alternateOriginZip optional
+  o Integer alternateDestZip optional
+  o Integer ContainerDropZip
+}
 asset Container_Tracking identified by bill_number {
   o String bill_number
   o DateTime OrderDate
@@ -217,6 +225,7 @@ asset Container_Tracking identified by bill_number {
   o DateTime DeliveredOn optional
   --> Customer OrderedBy
   --> Container Container_Assigned
+  o Route Expected_Route_Zipcodes
   o Integer Cargo_weight
   o Cargo_Details Cargo_details
   o Cargo_status Cargo_status
